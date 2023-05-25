@@ -3,39 +3,74 @@ import React, { Component } from 'react';
 import SwapiService from '../../services/swapi-service';
 
 import './random-planet.css';
+import Spinner from '../spinner';
+import ErrorIndicator from '../error-indicator/index'
 
 export default class RandomPlanet extends Component {
 
   swapiService = new SwapiService(); 
 
   state = {
-    planet: {}
+    planet: {},
+    loading: true
   };
 
   constructor() {
     super();
     this.updatePlanet();
+    this.interval = setInterval(this.updatePlanet, 15000);
   }
 
   onPlanetLoaded = (planet) => {
-    this.setState({planet});
-  }
+    this.setState({
+      planet,
+      loading: false,
+      error: false
+    });
+  };
 
-  updatePlanet() {
-    const id = Math.floor(Math.random()*25) + 2;
+  onError = (err) => {
+    this.setState({
+      error: true,
+      loading: false
+    });
+  };
+
+  updatePlanet = () => {
+    const id = Math.floor(Math.random()*25) + 3;
     this.swapiService
       .getPlanet(id)
-      .then(this.onPlanetLoaded);
+      .then(this.onPlanetLoaded)
+      .catch(this.onError);
   }
 
   render() {
+    const { planet, loading, error } = this.state;
 
-    const { planet: { id, name,
-      population, rotationPeriod, diameter } } = this.state;
+    const hasData = !(loading || error);
+
+    const errorMessage = error ? <ErrorIndicator /> : null;
+    const spinner = loading ? <Spinner /> : null;
+    const content = hasData ? <PlanetView planet={planet} /> : null;
 
     return (
       <div className="random-planet jumbotron rounded">
-        <img className="planet-image"
+        {errorMessage}
+        {spinner}
+        {content}
+      </div>
+    );
+  }
+}
+
+const PlanetView = ({ planet }) => {
+  
+  const { id, name, population,
+    rotationPeriod, diameter } = planet;
+
+  return (
+    <>
+       <img className="planet-image"
              src={`https://starwars-visualguide.com/assets/img/planets/${id}.jpg`}/>
         <div>
           <h4>{name}</h4>
@@ -54,8 +89,6 @@ export default class RandomPlanet extends Component {
             </li>
           </ul>
         </div>
-      </div>
-
-    );
-  }
+  </>
+  )
 }
