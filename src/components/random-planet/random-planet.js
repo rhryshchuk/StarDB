@@ -15,10 +15,13 @@ export default class RandomPlanet extends Component {
     loading: true
   };
 
-  constructor() {
-    super();
+  componentDidMount() {
     this.updatePlanet();
     this.interval = setInterval(this.updatePlanet, 15000);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.interval)
   }
 
   onPlanetLoaded = (planet) => {
@@ -71,7 +74,7 @@ const PlanetView = ({ planet }) => {
   return (
     <>
        <img className="planet-image"
-             src={`https://starwars-visualguide.com/assets/img/planets/${id}.jpg`}/>
+             src={`https://starwars-visualguide.com/assets/img/planets/${id}.jpg`} alt='planet img'/>
         <div>
           <h4>{name}</h4>
           <ul className="list-group list-group-flush">
